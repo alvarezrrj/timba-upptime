@@ -12,8 +12,6 @@ sites:
   - name: agent-timba
     url: $AGENT_TIMBA_URL
     maxResponseTime: 2500
-  - name: non-existent site
-    url: https://idontexistfoobaz.blabla
 
 assignees:
   - AlphaDev87
