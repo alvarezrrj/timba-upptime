@@ -1,7 +1,7 @@
 url: $TIMBA_API_URL
-status: down
-code: 503
-responseTime: 38
-lastUpdated: 2024-06-06T20:42:07.123Z
+status: up
+code: 200
+responseTime: 76
+lastUpdated: 2024-06-06T20:53:54.842Z
 startTime: 2024-06-04T12:45:56.282Z
 generator: Upptime <https://github.com/upptime/upptime>
