@@ -12,6 +12,9 @@ sites:
   - name: agent-timba
     url: $AGENT_TIMBA_URL
     maxResponseTime: 2500
+  - name: casinomex.vip
+    url: https://casinomex.vip
+    maxResponseTime: 2500
 
 assignees:
   - AlphaDev87
