@@ -1,4 +1,4 @@
-# [📈 Live Status](https://alvarezrrj.github.io/upptime): <!--live status--> **🟩 All systems operational**
+# [📈 Live Status](https://alvarezrrj.github.io/timba-upptime): <!--live status--> **🟩 All systems operational**
 
 This repository contains the open-source uptime monitor and status page for [Rodrigo Alvarez](https://alvarezrrj.github.io/upptime), powered by [Upptime](https://github.com/upptime/upptime).
 
@@ -23,7 +23,7 @@ With [Upptime](https://upptime.js.org), you can get your own unlimited and free 
 
 <!--end: status pages-->
 
-[**Visit our status website →**](https://alvarezrrj.github.io/upptime)
+[**Visit our status website →**](https://alvarezrrj.github.io/timba-upptime)
 
 ## 📄 License
 
