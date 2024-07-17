@@ -15,6 +15,11 @@ sites:
   - name: casinomex.vip
     url: https://casinomex.vip
     maxResponseTime: 2500
+  - name: banxico
+    url: https://www.banxico.org.mx/cep/valida.do
+    method: POST
+    body: tipoCriterio=T&fecha=11-03-2024&criterio=53771ALBO11032024195558814&emisor=90646&receptor=90659&cuenta=659437001005389354&receptorParticipante=0&monto=10&captcha=c&tipoConsulta=1
+    maxResponseTime: 2500
 
 assignees:
   - AlphaDev87
