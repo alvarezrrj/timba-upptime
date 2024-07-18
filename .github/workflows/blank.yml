@@ -26,6 +26,8 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/actions/workflows/blank.yml/runs?status=success&per_page=1" \
             | jq -r '.workflow_runs[0].id')
           echo "RUN_ID=$run_id" >> $GITHUB_ENV
+          echo $RUN_ID
+          echo ${{ env.RUN_ID }}
           
       - name: Download state artifact
         uses: actions/download-artifact@v4
@@ -33,7 +35,8 @@ jobs:
           name: banxico-status
           path: prev
           github-token: ${{ secrets.GH_PAT }}
-          run-id: ${{ env.RUN_ID }} 
+          # run-id: ${{ env.RUN_ID }} 
+          run-id: 9993573441
           
       - name: Send form and store cookie as env variable
         run: |
