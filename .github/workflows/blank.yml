@@ -48,7 +48,11 @@ jobs:
           
       - name: Download xml
         run: |
-          curl https://www.banxico.org.mx/cep/descarga.do?formato=XML -H "Cookie: $COOKIE" | grep 'MontoPago="10.00"' > log.txt
+          echo "::debug::Downloading XML"
+          result=$(curl https://www.banxico.org.mx/cep/descarga.do?formato=XML -H "Cookie: $COOKIE")
+          # | grep 'MontoPago="10.00"' > log.txt
+          echo "::debug::Result $result"
+          
           
       - name: Store banxico status
         run: |
