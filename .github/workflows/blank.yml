@@ -36,22 +36,24 @@ jobs:
           run-id: ${{ env.RUN_ID }} 
           # run-id: 9993573441
           
-      - name: Send form and store cookie as env variable
+      - name: Send form and store cookies as env variable
         run: |
-          echo COOKIE=$(curl -X POST -i https://www.banxico.org.mx/cep/valida.do \
+          COOKIES=$(curl -X POST -i https://www.banxico.org.mx/cep/valida.do \
           -d 'tipoCriterio=T&fecha=11-03-2024&criterio=53771ALBO11032024195558814&emisor=90646&receptor=90659&cuenta=659437001005389354&receptorParticipante=0&monto=10&captcha=c&tipoConsulta=1' \
-          | grep JSESSIONID \
+          | grep Set-Cookie \
           | sed 's/Set-Cookie: //' \
-          | sed 's/;.*//') >> $GITHUB_ENV
+          | sed 's/;.*//')
+          COOKIES=$(echo $COOKIES | sed 's/ /; /g')
+          echo "COOKIES=$COOKIES" >> $GITHUB_ENV
           
       - name: Download xml
         run: |
-          result=$(curl https://www.banxico.org.mx/cep/descarga.do?formato=XML -H "Cookie: $COOKIE") \
-          | grep 'MontoPago="10.00"' > log.txt
+          curl https://www.banxico.org.mx/cep/descarga.do?formato=XML -H "Cookie: $COOKIES" > log.txt
+          # | grep 'MontoPago="10.00"' > log.txt
           
       - name: Store banxico status
         run: |
-          if [ -s log.txt ]; then echo "1" > banxico-status.txt; else echo "0" > banxico-status.txt; fi
+          if grep 'MontoPago="10.00"' log.txt &> /dev/null; then echo "1" > banxico-status.txt; else echo "0" > banxico-status.txt; fi
           echo CURRENT_STATUS=$(cat banxico-status.txt) >> $GITHUB_ENV
           
       - name: Check status against prev state
