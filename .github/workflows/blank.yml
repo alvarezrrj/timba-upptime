@@ -19,7 +19,14 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Runs a set of commands using the runners shell
+      - name: Create initial artifact
+        run: echo 1 > banxico-status.txt
+      - name: Upload initial artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: banxico-status
+          path: banxico-status.txt
+          
       - name: Download state artifact
         uses: actions/download-artifact@v4
         with:
