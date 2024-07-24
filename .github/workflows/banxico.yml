@@ -124,10 +124,10 @@ jobs:
         run: |
           FRESH=$(curl https://www.banxico.org.mx/cep/instituciones.do?fecha=$(date +%d-%m-%Y))
           
-          if [ ! "$CURRENT" = "$FRESH" ]; then 
-            echo "NOTIFY_BANK_LIST=1" >> $GITHUB_ENV; 
-          else 
+          if [ "$CURRENT" = "$FRESH" ]; then 
             echo "NOTIFY_BANK_LIST=0" >> $GITHUB_ENV; 
+          else 
+            echo "NOTIFY_BANK_LIST=1" >> $GITHUB_ENV; 
           fi
           
           echo $FRESH > bank_list.txt
@@ -139,7 +139,8 @@ jobs:
             -d text="🏦 La lista de bancos ha cambiado" \
             -d chat_id=${{ secrets.NOTIFICATION_TELEGRAM_CHAT_ID }}
 
-            curl https://api.telegram.org/bot${{ secrets.NOTIFICATION_TELEGRAM_BOT_KEY }}/sendDocument?chat_id=${{ secrets.NOTIFICATION_TELEGRAM_CHAT_ID }} \ 
+            curl https://api.telegram.org/bot${{ secrets.NOTIFICATION_TELEGRAM_BOT_KEY }}/sendDocument \
+            -F chat_id=${{ secrets.NOTIFICATION_TELEGRAM_CHAT_ID }} \
             -F document=@bank_list.txt \
             -F caption='Nueva lista' 
           fi
