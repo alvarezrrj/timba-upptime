@@ -1,0 +1,143 @@
+# This is a scheduled workflow to check the health of banxico's transfer checker
+
+name: Banxico Monitor
+
+# Controls when the workflow will run
+on:
+  # Runs every 5 minutes
+  schedule:
+    - cron: "*/5 * * * *"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  check_banxico_status:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Get last successful run ID
+        id: get_run_id
+        run: |
+          run_id=$(curl -s -H "Authorization: token ${{ secrets.GH_PAT }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/banxico.yml/runs?status=success&per_page=1" \
+            | jq -r '.workflow_runs[0].id')
+          echo "RUN_ID=$run_id" >> $GITHUB_ENV
+          
+      - name: Download state artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: banxico-status
+          path: prev
+          github-token: ${{ secrets.GH_PAT }}
+          run-id: ${{ env.RUN_ID }} 
+          
+      - name: Send form and store cookies as env variable
+        run: |
+          COOKIES=$(curl -X POST -i https://www.banxico.org.mx/cep/valida.do \
+          -d 'tipoCriterio=T&fecha=11-03-2024&criterio=53771ALBO11032024195558814&emisor=90646&receptor=90659&cuenta=659437001005389354&receptorParticipante=0&monto=10&captcha=c&tipoConsulta=1' \
+          | grep Set-Cookie \
+          | sed 's/Set-Cookie: //' \
+          | sed 's/;.*//')
+          COOKIES=$(echo $COOKIES | sed 's/ /; /g')
+          echo "COOKIES=$COOKIES" >> $GITHUB_ENV
+          
+      - name: Download xml
+        run: |
+          curl https://www.banxico.org.mx/cep/descarga.do?formato=XML -H "Cookie: $COOKIES" > log.txt
+          # | grep 'MontoPago="10.00"' > log.txt
+          
+      - name: Store banxico status
+        run: |
+          if grep 'MontoPago="10.00"' log.txt &> /dev/null; then echo "1" > banxico-status.txt; else echo "0" > banxico-status.txt; fi
+          echo CURRENT_STATUS=$(cat banxico-status.txt) >> $GITHUB_ENV
+          
+      - name: Check status against prev state
+        run: |
+          if [ "$(cat banxico-status.txt)" = "$(cat prev/banxico-status.txt)" ]; then
+            echo NOTIFY=0 >> $GITHUB_ENV
+          else
+            echo NOTIFY=1 >> $GITHUB_ENV
+          fi
+
+      - name: Notify
+        run: |
+          if (( NOTIFY == 1 )); then
+            if (( CURRENT_STATUS == 0 )); then
+              MESSAGE="🟥 Banxico está rompido"
+            elif (( CURRENT_STATUS == 1 )); then
+              MESSAGE="🟩 Banxico volvió al ruedo"
+            fi
+
+            curl https://api.telegram.org/bot${{ secrets.NOTIFICATION_TELEGRAM_BOT_KEY }}/sendMessage \
+            -d text="$MESSAGE" \
+            -d chat_id=${{ secrets.NOTIFICATION_TELEGRAM_CHAT_ID }}
+          fi
+
+      - name: Store state artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: banxico-status
+          path: banxico-status.txt
+          
+  check_bank_list:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Get last successful run ID
+        id: get_run_id
+        run: |
+          run_id=$(curl -s -H "Authorization: token ${{ secrets.GH_PAT }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/banxico.yml/runs?status=success&per_page=1" \
+            | jq -r '.workflow_runs[0].id')
+          echo "RUN_ID=$run_id" >> $GITHUB_ENV
+          
+      - name: Download current list artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bank-list
+          # path: prev
+          github-token: ${{ secrets.GH_PAT }}
+          run-id: ${{ env.RUN_ID }}
+        continue-on-error: true
+
+      - name: Set $CURRENT
+        run: |
+          if [ -s bank_list.txt ]; then
+            CURRENT=$(cat bank_list.txt)
+          else 
+            CURRENT='{"instituciones":[["40138","ABC CAPITAL"],["40133","ACTINVER"],["40062","AFIRME"],["90706","ARCUS"],["90659","ASP INTEGRA OPC"],["40128","AUTOFIN"],["40127","AZTECA"],["37166","BaBien"],["40030","BAJIO"],["40002","BANAMEX"],["40154","BANCO COVALTO"],["37006","BANCOMEXT"],["40137","BANCOPPEL"],["40160","BANCO S3"],["40152","BANCREA"],["37019","BANJERCITO"],["40147","BANKAOOL"],["40106","BANK OF AMERICA"],["40159","BANK OF CHINA"],["37009","BANOBRAS"],["40072","BANORTE"],["40058","BANREGIO"],["40060","BANSI"],["2001","BANXICO"],["40129","BARCLAYS"],["40145","BBASE"],["40012","BBVA MEXICO"],["40112","BMONEX"],["90677","CAJA POP MEXICA"],["90683","CAJA TELEFONIST"],["90630","CB INTERCAM"],["40124","CBM BANCO"],["40143","CIBANCO"],["90631","CI BOLSA"],["90901","CLS"],["90903","CoDi Valida"],["40130","COMPARTAMOS"],["40140","CONSUBANCO"],["90652","CREDICAPITAL"],["90688","CREDICLUB"],["90680","CRISTOBAL COLON"],["90723","Cuenca"],["40151","DONDE"],["90616","FINAMEX"],["90634","FINCOMUN"],["90689","FOMPED"],["90699","FONDEADORA"],["90685","FONDO (FIRA)"],["90601","GBM"],["37168","HIPOTECARIA FED"],["40021","HSBC"],["40155","ICBC"],["40036","INBURSA"],["90902","INDEVAL"],["40150","INMOBILIARIO"],["40136","INTERCAM BANCO"],["40059","INVEX"],["40110","JP MORGAN"],["90661","KLAR"],["90653","KUSPIT"],["90670","LIBERTAD"],["90602","MASARI"],["90722","Mercado Pago W"],["40042","MIFEL"],["40158","MIZUHO BANK"],["90600","MONEXCB"],["40108","MUFG"],["40132","MULTIVA BANCO"],["37135","NAFIN"],["90638","NU MEXICO"],["90710","NVIO"],["40148","PAGATODO"],["90620","PROFUTURO"],["40156","SABADELL"],["40014","SANTANDER"],["40044","SCOTIABANK"],["40157","SHINHAN"],["90646","STP"],["90703","TESORED"],["90684","TRANSFER"],["90656","UNAGRA"],["90617","VALMEX"],["90605","VALUE"],["90608","VECTOR"],["40113","VE POR MAS"],["40141","VOLKSWAGEN"]],"institucionesMISPEI":[["40138","ABC CAPITAL"],["40133","ACTINVER"],["40062","AFIRME"],["90706","ARCUS"],["90659","ASP INTEGRA OPC"],["40128","AUTOFIN"],["40127","AZTECA"],["37166","BaBien"],["40030","BAJIO"],["40002","BANAMEX"],["40154","BANCO COVALTO"],["37006","BANCOMEXT"],["40137","BANCOPPEL"],["40160","BANCO S3"],["40152","BANCREA"],["37019","BANJERCITO"],["40147","BANKAOOL"],["40106","BANK OF AMERICA"],["40159","BANK OF CHINA"],["37009","BANOBRAS"],["40072","BANORTE"],["40058","BANREGIO"],["40060","BANSI"],["2001","BANXICO"],["40129","BARCLAYS"],["40145","BBASE"],["40012","BBVA MEXICO"],["40112","BMONEX"],["90677","CAJA POP MEXICA"],["90683","CAJA TELEFONIST"],["90630","CB INTERCAM"],["40124","CBM BANCO"],["40143","CIBANCO"],["90631","CI BOLSA"],["90901","CLS"],["90903","CoDi Valida"],["40130","COMPARTAMOS"],["40140","CONSUBANCO"],["90652","CREDICAPITAL"],["90688","CREDICLUB"],["90680","CRISTOBAL COLON"],["90723","Cuenca"],["40151","DONDE"],["90616","FINAMEX"],["90634","FINCOMUN"],["90689","FOMPED"],["90699","FONDEADORA"],["90685","FONDO (FIRA)"],["90601","GBM"],["37168","HIPOTECARIA FED"],["40021","HSBC"],["40155","ICBC"],["40036","INBURSA"],["90902","INDEVAL"],["40150","INMOBILIARIO"],["40136","INTERCAM BANCO"],["40059","INVEX"],["40110","JP MORGAN"],["90661","KLAR"],["90653","KUSPIT"],["90670","LIBERTAD"],["90602","MASARI"],["90722","Mercado Pago W"],["40042","MIFEL"],["40158","MIZUHO BANK"],["90600","MONEXCB"],["40108","MUFG"],["40132","MULTIVA BANCO"],["37135","NAFIN"],["90638","NU MEXICO"],["90710","NVIO"],["40148","PAGATODO"],["90620","PROFUTURO"],["40156","SABADELL"],["40014","SANTANDER"],["40044","SCOTIABANK"],["40157","SHINHAN"],["90646","STP"],["90703","TESORED"],["90684","TRANSFER"],["90656","UNAGRA"],["90617","VALMEX"],["90605","VALUE"],["90608","VECTOR"],["40113","VE POR MAS"],["40141","VOLKSWAGEN"]],"overrideCaptcha":true}'
+          fi
+          
+      - name: Download and check bank list from banxico
+        run: |
+          FRESH=$(curl https://www.banxico.org.mx/cep/instituciones.do?fecha=$(date +%d-%m-%Y))
+          
+          if [ ! "$CURRENT" = "$FRESH" ]; then 
+            echo "NOTIFY_BANK_LIST=1" >> $GITHUB_ENV; 
+          else 
+            echo "NOTIFY_BANK_LIST=0" >> $GITHUB_ENV; 
+          fi
+          
+          echo $FRESH > bank_list.txt
+
+      - name: Notify
+        run: |
+          if [ "$NOTIFY_BANK_LIST" = "1" ]; then
+            curl https://api.telegram.org/bot${{ secrets.NOTIFICATION_TELEGRAM_BOT_KEY }}/sendMessage \
+            -d text="🏦 La lista de bancos ha cambiado" \
+            -d chat_id=${{ secrets.NOTIFICATION_TELEGRAM_CHAT_ID }}
+
+            curl https://api.telegram.org/bot${{ secrets.NOTIFICATION_TELEGRAM_BOT_KEY }}/sendDocument?chat_id=${{ secrets.NOTIFICATION_TELEGRAM_CHAT_ID }} \ 
+            -F document=@bank_list.txt \
+            -F caption='Nueva lista' 
+          fi
+          
+      - name: Store new bank list as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bank-list
+          path: bank_list.txt
