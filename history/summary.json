@@ -27,11 +27,11 @@
     "icon": "https://icons.duckduckgo.com/ip3/null.ico",
     "slug": "timba-api",
     "status": "up",
-    "uptime": "98.69%",
+    "uptime": "98.70%",
     "uptimeDay": "100.00%",
     "uptimeWeek": "100.00%",
     "uptimeMonth": "100.00%",
-    "uptimeYear": "98.69%",
+    "uptimeYear": "98.70%",
     "time": 63,
     "timeDay": 76,
     "timeWeek": 74,
@@ -73,9 +73,9 @@
     "url": "https://casinomex.vip",
     "icon": "https://icons.duckduckgo.com/ip3/casinomex.vip.ico",
     "slug": "casinomex-vip",
-    "status": "up",
+    "status": "down",
     "uptime": "100.00%",
-    "uptimeDay": "100.00%",
+    "uptimeDay": "99.99%",
     "uptimeWeek": "100.00%",
     "uptimeMonth": "100.00%",
     "uptimeYear": "100.00%",
@@ -84,7 +84,9 @@
     "timeWeek": 640,
     "timeMonth": 601,
     "timeYear": 591,
-    "dailyMinutesDown": {}
+    "dailyMinutesDown": {
+      "2024-08-22": 0
+    }
   },
   {
     "name": "banxico",
