@@ -124,6 +124,8 @@ jobs:
       - name: Download and check bank list from banxico
         run: |
           FRESH=$(curl https://www.banxico.org.mx/cep/instituciones.do?fecha=$(date +%d-%m-%Y))
+
+          if ! grep instituciones bank_list.txt &> /dev/null; then exit 0; fi
           
           if [ "$CURRENT" = "$FRESH" ]; then 
             echo "NOTIFY_BANK_LIST=0" >> $GITHUB_ENV; 
