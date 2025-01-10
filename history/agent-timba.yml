@@ -1,7 +1,7 @@
 url: $AGENT_TIMBA_URL
-status: down
-code: 521
-responseTime: 279
-lastUpdated: 2025-01-10T17:28:27.940Z
+status: up
+code: 200
+responseTime: 631
+lastUpdated: 2025-01-10T17:40:32.495Z
 startTime: 2024-06-04T12:45:56.882Z
 generator: Upptime <https://github.com/upptime/upptime>
