@@ -1,7 +1,7 @@
 url: $TIMBA_URL
-status: degraded
+status: down
 code: 521
-responseTime: 4950
-lastUpdated: 2025-06-24T20:37:05.656Z
+responseTime: 232
+lastUpdated: 2025-06-24T20:50:54.564Z
 startTime: 2024-06-04T12:45:55.647Z
 generator: Upptime <https://github.com/upptime/upptime>
