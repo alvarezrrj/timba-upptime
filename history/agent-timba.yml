@@ -1,7 +1,7 @@
 url: $AGENT_TIMBA_URL
-status: degraded
+status: down
 code: 526
-responseTime: 5374
-lastUpdated: 2025-07-07T21:49:28.738Z
+responseTime: 303
+lastUpdated: 2025-07-07T22:09:10.134Z
 startTime: 2024-06-04T12:45:56.882Z
 generator: Upptime <https://github.com/upptime/upptime>
