@@ -1,7 +1,7 @@
 url: https://www.banxico.org.mx/cep/valida.do
-status: degraded
+status: up
 code: 200
-responseTime: 2975
-lastUpdated: 2025-07-29T21:15:31.469Z
+responseTime: 475
+lastUpdated: 2025-07-29T21:37:07.341Z
 startTime: 2024-07-17T17:41:00.050Z
 generator: Upptime <https://github.com/upptime/upptime>
